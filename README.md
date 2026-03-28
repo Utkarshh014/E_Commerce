@@ -1,4 +1,4 @@
-# 🛒 Mini Amazon — E-Commerce Platform
+# 🛒 E-Commerce Platform
 
 A production-grade, scalable **Mini E-Commerce Platform** built with the **MERN stack** (MongoDB, Express, React, Node.js) and **TypeScript**. Architecturally designed with strict OOP principles, featuring **4 design patterns** implemented across 8 modules.
 
