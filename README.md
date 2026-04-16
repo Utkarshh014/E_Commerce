@@ -30,7 +30,19 @@ A production-grade, scalable **Mini E-Commerce Platform** built with the **MERN 
 ```
 
 ---
+## DIAGRAMS
 
+Excalidraw URL: https://excalidraw.com/#room=931f37ddc819da5b8b7f,46B46RRH9nqD3BOEEAkcdQ (contains both ER and UML)
+
+<h2 align="center">ER Diagram</h2>
+
+<p align="center">
+  <img src="img/er_diagram.png" alt="ER Diagram" width="600"/>
+</p>
+
+
+
+---
 ## 🎯 OOP Concepts & Design Patterns
 
 ### Design Patterns Implemented
