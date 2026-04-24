@@ -11,8 +11,10 @@ import { InAppNotifier } from '../observers/InAppNotifier';
 import { CreditCardPayment } from '../strategies/payments/CreditCardPayment';
 import { UPIPayment } from '../strategies/payments/UPIPayment';
 import { WalletPayment } from '../strategies/payments/WalletPayment';
+import { MockStripePayment } from '../strategies/payments/MockStripePayment';
 import { IPaymentStrategy } from '../interfaces/IPaymentStrategy';
 import { OrderStatus } from '../interfaces/IOrderState';
+import { AppError } from '../utils/AppError';
 
 // ─── Order Controller ───────────────────────────────────────────────
 // Thin HTTP handler — ALL logic delegated to OrderService.
@@ -50,8 +52,10 @@ function resolvePaymentStrategy(body: Record<string, unknown>): IPaymentStrategy
       return new UPIPayment((body.upiId as string) || 'user@upi');
     case 'wallet':
       return new WalletPayment(parseFloat(body.walletBalance as string) || 1000);
+    case 'stripe':
+      return new MockStripePayment((body.clientSecret as string) || 'mock_secret_123');
     default:
-      throw new Error(`Unsupported payment method: ${method}`);
+      throw AppError.badRequest(`Unsupported payment method: ${method}`);
   }
 }
 
@@ -81,6 +85,16 @@ export class OrderController {
 
   static async transitionOrder(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      // S2: Verify the caller owns the order (customers can only act on their own orders)
+      // Admins bypass this check and can transition any order.
+      if (req.userRole !== 'admin') {
+        const order = await orderService.getOrderById(req.params.id as string);
+        if ((order.userId as any).toString() !== req.userId) {
+          res.status(403).json({ success: false, message: 'You do not have permission to update this order.' });
+          return;
+        }
+      }
+
       const order = await orderService.transitionTo(
         req.params.id as string,
         req.body.status as OrderStatus
@@ -113,6 +127,19 @@ export class OrderController {
     try {
       const order = await orderService.getOrderById(req.params.id as string);
       res.status(200).json({ success: true, data: { order } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getVendorOrders(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (req.userRole !== 'vendor') {
+        res.status(403).json({ success: false, message: 'Only vendors can view vendor orders' });
+        return;
+      }
+      const orders = await orderService.getVendorOrders(req.userId!);
+      res.status(200).json({ success: true, data: { orders } });
     } catch (error) {
       next(error);
     }

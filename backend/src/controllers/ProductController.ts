@@ -11,7 +11,7 @@ const productService = new ProductService();
 export const validateProduct = [
   body('name').trim().notEmpty().withMessage('Product name is required'),
   body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
-  body('category').trim().notEmpty().withMessage('Category is required'),
+  body('categoryId').trim().notEmpty().withMessage('Category ID is required'),
   body('stock').isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
   body('productType').isIn(['physical', 'digital']).withMessage('Product type must be physical or digital'),
 ];
@@ -25,6 +25,12 @@ export class ProductController {
         return;
       }
 
+      // C5: Only inject vendorId from JWT when the caller IS a vendor.
+      // Admins must supply vendorId explicitly in the body.
+      if (req.userRole === 'vendor') {
+        req.body.vendorId = req.userId;
+      }
+
       const product = await productService.createProduct(req.body.productType, req.body);
       res.status(201).json({ success: true, data: { product } });
     } catch (error) {
@@ -34,14 +40,21 @@ export class ProductController {
 
   static async getAll(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      // V1: Guard parseFloat/parseInt against NaN — invalid strings treated as undefined
+      const rawMinPrice = parseFloat(req.query.minPrice as string);
+      const rawMaxPrice = parseFloat(req.query.maxPrice as string);
+      const rawPage = parseInt(req.query.page as string, 10);
+      const rawLimit = parseInt(req.query.limit as string, 10);
+
       const result = await productService.getAllProducts({
-        category: req.query.category as string,
-        minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
-        maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
+        categoryId: req.query.category as string || req.query.categoryId as string,
+        vendorId: req.query.vendorId as string,
+        minPrice: !isNaN(rawMinPrice) ? rawMinPrice : undefined,
+        maxPrice: !isNaN(rawMaxPrice) ? rawMaxPrice : undefined,
         search: req.query.search as string,
         productType: req.query.productType as string,
-        page: req.query.page ? parseInt(req.query.page as string) : undefined,
-        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+        page: !isNaN(rawPage) ? rawPage : undefined,
+        limit: !isNaN(rawLimit) ? rawLimit : undefined,
       });
 
       res.status(200).json({ success: true, data: result });

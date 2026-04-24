@@ -18,7 +18,11 @@ export class NotificationController {
 
   static async markAsRead(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      await Notification.findByIdAndUpdate(req.params.id, { read: true });
+      // S3: Filter by both _id AND userId to prevent cross-user notification manipulation
+      await Notification.findOneAndUpdate(
+        { _id: req.params.id, userId: req.userId },
+        { read: true }
+      );
       res.status(200).json({ success: true, message: 'Notification marked as read' });
     } catch (error) {
       next(error);

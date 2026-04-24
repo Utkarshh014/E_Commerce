@@ -33,6 +33,7 @@ export class AuthController {
         email: req.body.email,
         password: req.body.password,
         role: req.body.role,
+        vendorName: req.body.vendorName,
       });
 
       res.status(201).json({ success: true, data: result });
