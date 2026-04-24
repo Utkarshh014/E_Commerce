@@ -4,13 +4,15 @@ import bcrypt from 'bcrypt';
 // ─── User Model ─────────────────────────────────────────────────────
 // Encapsulation: Password hashing is inside the class method, not controller.
 
-export type UserRole = 'customer' | 'admin';
+export type UserRole = 'customer' | 'admin' | 'vendor';
 
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
   role: UserRole;
+  isApprovedVendor?: boolean;
+  vendorName?: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -41,8 +43,16 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['customer', 'admin'],
+      enum: ['customer', 'admin', 'vendor'],
       default: 'customer',
+    },
+    isApprovedVendor: {
+      type: Boolean,
+      default: false,
+    },
+    vendorName: {
+      type: String,
+      trim: true,
     },
   },
   {
@@ -72,6 +82,8 @@ UserSchema.methods.toSafeObject = function (): Record<string, unknown> {
     name: this.name,
     email: this.email,
     role: this.role,
+    isApprovedVendor: this.isApprovedVendor,
+    vendorName: this.vendorName,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };

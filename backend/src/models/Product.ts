@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 
 // ─── Product Model ──────────────────────────────────────────────────
 // Uses Mongoose discriminators for PhysicalProduct / DigitalProduct.
@@ -7,10 +7,14 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IProduct extends Document {
   name: string;
   price: number;
-  category: string;
+  categoryId: Types.ObjectId;
+  vendorId: Types.ObjectId;
+  averageRating: number;
+  numReviews: number;
   stock: number;
   description: string;
   imageUrl: string;
+  imageUrls: string[];
   productType: 'physical' | 'digital';
   createdAt: Date;
   updatedAt: Date;
@@ -40,10 +44,26 @@ const ProductSchema = new Schema<IProduct>(
       required: [true, 'Price is required'],
       min: [0, 'Price cannot be negative'],
     },
-    category: {
-      type: String,
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
       required: [true, 'Category is required'],
-      trim: true,
+    },
+    vendorId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Vendor is required'],
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    numReviews: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     stock: {
       type: Number,
@@ -60,6 +80,10 @@ const ProductSchema = new Schema<IProduct>(
       type: String,
       default: '',
     },
+    imageUrls: {
+      type: [String],
+      default: [],
+    },
     productType: {
       type: String,
       required: true,
@@ -73,7 +97,8 @@ const ProductSchema = new Schema<IProduct>(
 );
 
 // Indexes for efficient filtering
-ProductSchema.index({ category: 1 });
+ProductSchema.index({ categoryId: 1 });
+ProductSchema.index({ vendorId: 1 });
 ProductSchema.index({ price: 1 });
 ProductSchema.index({ name: 'text', description: 'text' });
 
