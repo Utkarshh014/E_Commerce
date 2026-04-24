@@ -6,7 +6,8 @@
 export interface ProductData {
   name: string;
   price: number;
-  category: string;
+  categoryId: string;
+  vendorId: string;
   stock: number;
   description?: string;
   imageUrl?: string;
