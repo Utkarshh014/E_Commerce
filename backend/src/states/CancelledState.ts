@@ -1,4 +1,5 @@
 import { IOrderState, OrderStatus } from '../interfaces/IOrderState';
+import { AppError } from '../utils/AppError';
 
 // ─── Cancelled State ────────────────────────────────────────────────
 // State Pattern: Order has been cancelled — terminal state.
@@ -19,6 +20,7 @@ export class CancelledState implements IOrderState {
   }
 
   async onExit(_orderId: string): Promise<void> {
-    throw new Error('Cannot exit Cancelled state — it is a terminal state.');
+    // C2: Use AppError so the global handler returns a structured 400, not a raw 500
+    throw AppError.badRequest('Order is already cancelled — it is a terminal state.');
   }
 }
