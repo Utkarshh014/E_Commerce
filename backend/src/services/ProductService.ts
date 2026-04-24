@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Product, { IProduct, PhysicalProduct, DigitalProduct } from '../models/Product';
 import { ProductFactory } from '../factories/ProductFactory';
 import { AppError } from '../utils/AppError';
@@ -7,7 +8,8 @@ import { AppError } from '../utils/AppError';
 // Factory Pattern: Uses ProductFactory for creation.
 
 interface ProductFilters {
-  category?: string;
+  categoryId?: string;
+  vendorId?: string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;
@@ -42,8 +44,11 @@ export class ProductService {
   }> {
     const query: Record<string, unknown> = {};
 
-    if (filters.category) {
-      query.category = filters.category;
+    if (filters.categoryId) {
+      query.categoryId = filters.categoryId;
+    }
+    if (filters.vendorId) {
+      query.vendorId = filters.vendorId;
     }
     if (filters.productType) {
       query.productType = filters.productType;
@@ -62,7 +67,12 @@ export class ProductService {
     const skip = (page - 1) * limit;
 
     const [products, total] = await Promise.all([
-      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Product.find(query)
+        .populate('categoryId', 'name slug')
+        .populate('vendorId', 'name vendorName')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
       Product.countDocuments(query),
     ]);
 
@@ -75,7 +85,9 @@ export class ProductService {
   }
 
   async getProductById(id: string): Promise<IProduct> {
-    const product = await Product.findById(id);
+    const product = await Product.findById(id)
+      .populate('categoryId', 'name slug')
+      .populate('vendorId', 'name vendorName');
     if (!product) {
       throw AppError.notFound('Product not found');
     }
@@ -100,8 +112,9 @@ export class ProductService {
     }
   }
 
-  async getCategories(): Promise<string[]> {
-    const categories = await Product.distinct('category');
+  async getCategories() {
+    const Category = mongoose.model('Category');
+    const categories = await Category.find().sort({ name: 1 });
     return categories;
   }
 }

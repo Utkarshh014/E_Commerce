@@ -20,13 +20,16 @@ export class CartService {
     if (!product) {
       throw AppError.notFound('Product not found');
     }
-    if (product.stock < quantity) {
-      throw AppError.badRequest(`Insufficient stock. Available: ${product.stock}`);
-    }
-
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = await Cart.create({ userId, items: [] });
+    }
+
+    const existingItem = cart.items.find(i => i.productId.toString() === productId);
+    const existingQuantity = existingItem ? existingItem.quantity : 0;
+    
+    if (product.stock < existingQuantity + quantity) {
+      throw AppError.badRequest(`Insufficient stock. Available: ${product.stock}, In Cart: ${existingQuantity}`);
     }
 
     const cartItem: ICartItem = {

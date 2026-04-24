@@ -15,7 +15,8 @@ interface RegisterData {
   name: string;
   email: string;
   password: string;
-  role?: 'customer' | 'admin';
+  role?: 'customer' | 'admin' | 'vendor';
+  vendorName?: string;
 }
 
 interface LoginData {
@@ -32,9 +33,9 @@ export class AuthService {
     this._jwtExpiresIn = jwtExpiresIn || process.env.JWT_EXPIRES_IN || '7d';
   }
 
-  private _generateToken(userId: string, role: string): string {
+  private _generateToken(userId: string, role: string, isApprovedVendor: boolean = false): string {
     return jwt.sign(
-      { userId, role },
+      { userId, role, isApprovedVendor },
       this._jwtSecret,
       { expiresIn: this._jwtExpiresIn } as jwt.SignOptions
     );
@@ -51,9 +52,10 @@ export class AuthService {
       email: data.email,
       password: data.password,
       role: data.role || 'customer',
+      vendorName: data.vendorName,
     });
 
-    const token = this._generateToken((user._id as any).toString(), user.role);
+    const token = this._generateToken((user._id as any).toString(), user.role, user.isApprovedVendor);
 
     return {
       user: user.toSafeObject(),
@@ -72,7 +74,7 @@ export class AuthService {
       throw AppError.unauthorized('Invalid email or password');
     }
 
-    const token = this._generateToken((user._id as any).toString(), user.role);
+    const token = this._generateToken((user._id as any).toString(), user.role, user.isApprovedVendor);
 
     return {
       user: user.toSafeObject(),
@@ -93,6 +95,7 @@ export class AuthService {
       const decoded = jwt.verify(token, this._jwtSecret) as {
         userId: string;
         role: string;
+        isApprovedVendor: boolean;
       };
       return decoded;
     } catch {

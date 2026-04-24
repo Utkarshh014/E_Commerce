@@ -24,39 +24,33 @@ const COUPON_DB: Record<string, { percentage: number; maxDiscount?: number; minO
 };
 
 export class DiscountService {
-  private _strategy: IDiscountStrategy | null = null;
-
-  /** Select the appropriate discount strategy based on request */
+  /** Select the appropriate discount strategy based on request — stateless, no side-effects */
   selectStrategy(request: DiscountRequest): IDiscountStrategy {
     switch (request.type) {
       case 'percentage':
-        this._strategy = new PercentageDiscount(request.value || 0);
-        break;
+        return new PercentageDiscount(request.value || 0);
       case 'flat':
-        this._strategy = new FlatDiscount(request.value || 0);
-        break;
+        return new FlatDiscount(request.value || 0);
       case 'coupon': {
         const couponData = COUPON_DB[request.couponCode?.toUpperCase() || ''];
         if (!couponData) {
           throw new Error(`Invalid coupon code: ${request.couponCode}`);
         }
-        this._strategy = new CouponDiscount({
+        return new CouponDiscount({
           code: request.couponCode!.toUpperCase(),
           percentage: couponData.percentage,
           maxDiscount: couponData.maxDiscount,
           minOrderValue: couponData.minOrderValue,
         });
-        break;
       }
       default:
         throw new Error(`Unknown discount type: ${request.type}`);
     }
-
-    return this._strategy;
   }
 
-  /** Apply the currently selected strategy to a price */
+  /** Apply the selected strategy to a price — fully stateless */
   applyDiscount(price: number, request: DiscountRequest): DiscountResult {
+    // L3: Select and apply inline — no shared mutable state on `this`
     const strategy = this.selectStrategy(request);
     return strategy.apply(price);
   }
