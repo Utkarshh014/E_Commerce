@@ -3,7 +3,7 @@
 // Adding a new channel (SMS, Push) requires ZERO changes to existing code.
 
 export interface NotificationEvent {
-  type: 'ORDER_PLACED' | 'PAYMENT_SUCCESS' | 'ORDER_SHIPPED' | 'ORDER_DELIVERED';
+  type: 'ORDER_PLACED' | 'PAYMENT_SUCCESS' | 'ORDER_SHIPPED' | 'ORDER_DELIVERED' | 'ORDER_CANCELLED';
   userId: string;
   orderId: string;
   message: string;
