@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ProductController, validateProduct } from '../controllers/ProductController';
-import { authGuard, requireRole } from '../middleware/authMiddleware';
+import { authGuard, requireApprovedVendor, requireProductOwnership } from '../middleware/authMiddleware';
+import reviewRoutes from './reviewRoutes';
 
 const router = Router();
 
@@ -9,9 +10,12 @@ router.get('/', ProductController.getAll);
 router.get('/categories', ProductController.getCategories);
 router.get('/:id', ProductController.getById);
 
-// Admin-only routes
-router.post('/', authGuard, requireRole('admin'), validateProduct, ProductController.create);
-router.put('/:id', authGuard, requireRole('admin'), ProductController.update);
-router.delete('/:id', authGuard, requireRole('admin'), ProductController.delete);
+// Reviews sub-route
+router.use('/:productId/reviews', reviewRoutes);
+
+// Admin/Vendor routes — ownership enforced for mutations
+router.post('/', authGuard, requireApprovedVendor, validateProduct, ProductController.create);
+router.put('/:id', authGuard, requireApprovedVendor, requireProductOwnership, ProductController.update);
+router.delete('/:id', authGuard, requireApprovedVendor, requireProductOwnership, ProductController.delete);
 
 export default router;
