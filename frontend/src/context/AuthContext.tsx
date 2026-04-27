@@ -21,6 +21,7 @@ interface AuthContextType {
   isVendor: boolean;
   isApprovedVendor: boolean;
   isAuthenticated: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +30,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const refreshProfile = async () => {
+    const savedToken = localStorage.getItem('token');
+    if (!savedToken) return;
+
+    try {
+      const res = await api.get('/auth/profile', {
+        headers: { Authorization: `Bearer ${savedToken}` },
+      });
+      setUser(res.data.data.user);
+      localStorage.setItem('user', JSON.stringify(res.data.data.user));
+    } catch (err) {
+      console.error('Failed to refresh profile', err);
+    }
+  };
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -39,21 +55,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
-    // Validate token is still accepted by the server
-    api
-      .get('/auth/profile', { headers: { Authorization: `Bearer ${savedToken}` } })
-      .then((res) => {
-        // Use fresh user data from server (reflects any approval status changes)
-        setToken(savedToken);
-        setUser(res.data.data.user);
-        localStorage.setItem('user', JSON.stringify(res.data.data.user));
-      })
-      .catch(() => {
-        // Token expired or revoked — clear stale session
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      })
-      .finally(() => setIsLoading(false));
+    refreshProfile().finally(() => setIsLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -94,6 +96,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isVendor: user?.role === 'vendor',
         isApprovedVendor: !!(user?.role === 'vendor' && user?.isApprovedVendor),
         isAuthenticated: !!token,
+        refreshProfile,
       }}
     >
       {children}

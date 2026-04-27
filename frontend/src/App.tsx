@@ -43,10 +43,27 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const VendorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading, isVendor, isApprovedVendor } = useAuth();
+  const { isAuthenticated, isLoading, isVendor, isApprovedVendor, refreshProfile } = useAuth();
   if (isLoading) return <div className="flex items-center justify-center h-screen"><span className="animate-spin text-4xl">⏳</span></div>;
   if (!isAuthenticated || !isVendor) return <Navigate to="/" replace />;
-  if (!isApprovedVendor) return <div className="flex flex-col items-center justify-center h-screen"><h2 className="text-3xl font-bold text-slate-800 mb-2">Pending Approval</h2><p className="text-slate-500">Your vendor account is pending admin approval.</p></div>;
+  
+  if (!isApprovedVendor) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen px-4 text-center">
+        <h2 className="text-3xl font-bold text-slate-800 mb-2">Pending Approval</h2>
+        <p className="text-slate-500 mb-6 max-w-md">
+          Your vendor account is pending admin approval. Once approved, you'll be able to list products and manage orders.
+        </p>
+        <button 
+          onClick={() => refreshProfile()}
+          className="px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors shadow-sm"
+        >
+          Check Approval Status
+        </button>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 };
 

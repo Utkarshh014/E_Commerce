@@ -1,197 +1,104 @@
-# 🛒 Shopsmart — E-Commerce Platform
+# 🛒 ShopSmart — Advanced Multi-Vendor eCommerce Platform
 
-A production-grade, scalable **Mini E-Commerce Platform** built with the **MERN stack** (MongoDB, Express, React, Node.js) and **TypeScript**. Architecturally designed with strict OOP principles, featuring **4 design patterns** implemented across 8 modules.
+ShopSmart is a production-grade, highly scalable **Multi-Vendor Marketplace** built using the **MERN stack** (MongoDB, Express, React, Node.js) and **TypeScript**. This project serves as a masterclass in **System Design**, **Design Patterns**, and **Enterprise-Level Architecture**.
+
+---
+### Live Link: [Link](https://shopsmart-sd-prj-ecom.vercel.app)
+### Project Report: [Project Report](https://drive.google.com/file/d/1dPGX9orj51_QdelIHJ-ku45jqBNgnBjk/view?usp=drive_link)
+## 🌟 Key Features
+
+### 🏢 Multi-Vendor Architecture
+*   **Sub-Order System:** When a customer buys items from multiple vendors, the system automatically splits the purchase into individual **Sub-Orders**. This allows each vendor to manage only their specific items without seeing data from competitors.
+*   **Vendor Approval Workflow:** New vendors go through a "Pending" state and must be verified by an **Admin** before they can list products.
+
+### 🛠️ Advanced Design Patterns
+*   **Strategy Pattern:** Interchangeable algorithms for **Payments** (Stripe, UPI, Wallet) and **Discounts** (Flat, Percentage, Coupon).
+*   **State Pattern:** Robust Order Lifecycle management (Pending → Paid → Shipped → Delivered). Transitions are validated via dedicated state classes.
+*   **Observer Pattern:** Decoupled notification system. The order service triggers events, and multiple observers (Email, In-App) react accordingly.
+*   **Factory Pattern:** Centralized product creation for physical and digital goods.
+
+### 🛡️ Security & Hardening
+*   **RBAC (Role-Based Access Control):** Granular permissions for `ADMIN`, `VENDOR`, and `CUSTOMER`.
+*   **JWT Authentication:** Stateless security with secure token storage and automatic logout on expiry (Axios Interceptors).
+*   **NoSQL Injection Protection:** Strict schema validation and input sanitization using `express-validator`.
+*   **CORS Protection:** Hardened cross-origin settings for secure communication between Vercel and Render.
 
 ---
 
 ## 🏗️ Architecture Overview
 
-```
-┌─────────── Frontend (React + Vite + TailwindCSS) ───────────┐
-│  Context (Auth, Cart) → Pages → Components → API Service     │
-│  Axios interceptors for JWT + 401 redirect                   │
-└──────────────────────────┬───────────────────────────────────┘
-                           │ REST API (/api/*)
-┌──────────────────────────▼───────────────────────────────────┐
-│                  Backend (Express + TypeScript)               │
-│                                                               │
-│  Routes → Controllers (thin) → Services (business logic)     │
-│                                    │                          │
-│              ┌─────────────────────┼──────────────────┐      │
-│              ▼                     ▼                  ▼      │
-│         Interfaces          Design Patterns        Models    │
-│    (IPaymentStrategy,      (Strategy, Factory,   (Mongoose)  │
-│     IDiscountStrategy,      Observer, State)                  │
-│     INotificationObserver,                                    │
-│     IOrderState)                                              │
-└──────────────────────────────────────────────────────────────┘
-                           │
-                    MongoDB Database
+```mermaid
+graph TD
+    User((User)) -->|Browser| Frontend[React + Vite + Tailwind]
+    Frontend -->|Axios + JWT| API[Express API Gateway]
+    API -->|Auth| Middleware[Auth & RBAC Middleware]
+    Middleware -->|Delegate| Controllers[Thin Controllers]
+    Controllers -->|Business Logic| Services[Service Layer]
+    Services -->|State/Strategy| Patterns[Design Patterns]
+    Services -->|Persistence| Models[Mongoose Models]
+    Models -->|Query| DB[(MongoDB Atlas)]
+    Services -->|Notify| Observers[Observer Notifiers]
 ```
 
 ---
 
-## 🎯 OOP Concepts & Design Patterns
+## 🚀 CI/CD & Deployment
 
-### Design Patterns Implemented
+This project is fully automated using **GitHub Actions**.
 
-| Pattern | Files | Purpose |
-|---------|-------|---------|
-| **Strategy** | `strategies/payments/*`, `strategies/discounts/*`, `services/PaymentService.ts`, `services/DiscountService.ts` | Payment methods (CreditCard, UPI, Wallet) and discount types (Percentage, Flat, Coupon) are interchangeable strategies |
-| **Factory** | `factories/ProductFactory.ts` | Creates correct product subclass (Physical/Digital) with extensible registration |
-| **Observer** | `observers/EmailNotifier.ts`, `observers/InAppNotifier.ts`, `services/NotificationService.ts` | Order events trigger all registered notification channels |
-| **State** | `states/PendingState.ts`, `states/PaidState.ts`, `states/ShippedState.ts`, `states/DeliveredState.ts` | Order lifecycle transitions are validated via state classes |
-
-### Four Pillars of OOP
-
-| Pillar | Example |
-|--------|---------|
-| **Encapsulation** | `User.comparePassword()` — password hashing inside model, not controller. `Cart.addItem()` — no direct array manipulation. |
-| **Abstraction** | `IPaymentStrategy`, `IDiscountStrategy`, `INotificationObserver` — services depend on interfaces, not concrete classes |
-| **Polymorphism** | `PaymentService.process(strategy)` — works for any payment type. `ProductFactory.create(type)` — returns correct subclass |
-| **Composition** | `Order HAS-A OrderItems[]`. `OrderService HAS-A NotificationService` (injected via constructor) |
-
-### Dependency Injection Example
-
-```typescript
-// OrderService receives all collaborators via constructor
-const orderService = new OrderService(
-  notificationService,  // HAS-A, not IS-A
-  paymentService,
-  inventoryService,
-  discountService,
-  cartService
-);
-```
+*   **Backend:** Hosted on **Render** (Node.js Environment).
+*   **Frontend:** Hosted on **Vercel** (Vite Preset).
+*   **Pipeline:** 
+    1.  Developer pushes code to `master`.
+    2.  GitHub Actions runs build checks for both Backend and Frontend.
+    3.  On success, it triggers **Deploy Hooks** to Render and Vercel.
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 backend/src/
-├── interfaces/         ← TypeScript interfaces (contracts)
-│   ├── IPaymentStrategy.ts
-│   ├── INotificationObserver.ts
-│   ├── IDiscountStrategy.ts
-│   └── IOrderState.ts
-├── strategies/         ← Concrete strategy implementations
-│   ├── payments/       (CreditCardPayment, UPIPayment, WalletPayment)
-│   └── discounts/      (PercentageDiscount, FlatDiscount, CouponDiscount)
-├── factories/
-│   └── ProductFactory.ts
-├── observers/
-│   ├── EmailNotifier.ts
-│   └── InAppNotifier.ts
-├── states/
-│   ├── PendingState.ts, PaidState.ts, ShippedState.ts
-│   ├── DeliveredState.ts, CancelledState.ts
-├── models/             (User, Product, Cart, Order, Notification)
-├── services/           (AuthService, ProductService, CartService,
-│                        OrderService, PaymentService, NotificationService,
-│                        DiscountService, InventoryService)
-├── controllers/        (Thin HTTP handlers)
-├── routes/
-├── middleware/         (authMiddleware, errorHandler)
-├── utils/              (AppError, idGenerator)
-└── server.ts
+├── interfaces/         ← Contracts for Patterns
+├── strategies/         ← Payment & Discount Logic
+├── factories/          ← Product Creation
+├── observers/          ← Email & In-App Notifications
+├── states/             ← Order Lifecycle Classes
+├── models/             ← Mongoose Schemas
+├── services/           ← Core Business Logic (The "Brain")
+├── controllers/        ← Request Handlers
+└── routes/             ← API Endpoint Definitions
 
 frontend/src/
-├── context/            (AuthContext, CartContext)
-├── services/           (api.ts — Axios with interceptors)
-├── components/         (Navbar, ProductCard, CartItem, OrderStatus, PaymentForm)
-├── pages/              (Home, ProductList, ProductDetail, Cart, Checkout,
-│                        Orders, Login, Register)
-├── App.tsx
-└── main.tsx
+├── context/            ← Auth & Cart State
+├── services/           ← api.ts (Interceptors)
+├── pages/              ← Admin, Vendor, and Customer Dashboards
+└── components/         ← Reusable UI Elements
 ```
 
 ---
 
-## 🔌 API Endpoints
+## 🛠️ Local Setup
 
-| Method | Endpoint | Auth | Role | Description |
-|--------|----------|------|------|-------------|
-| POST | `/api/auth/register` | ✗ | — | Register new user |
-| POST | `/api/auth/login` | ✗ | — | Login user |
-| GET | `/api/auth/profile` | ✓ | — | Get current user profile |
-| GET | `/api/products` | ✗ | — | List products (filters, pagination) |
-| GET | `/api/products/categories` | ✗ | — | Get all categories |
-| GET | `/api/products/:id` | ✗ | — | Get product details |
-| POST | `/api/products` | ✓ | Admin | Create product |
-| PUT | `/api/products/:id` | ✓ | Admin | Update product |
-| DELETE | `/api/products/:id` | ✓ | Admin | Delete product |
-| GET | `/api/cart` | ✓ | — | Get user's cart |
-| POST | `/api/cart/items` | ✓ | — | Add item to cart |
-| PATCH | `/api/cart/items/:id` | ✓ | — | Update item quantity |
-| DELETE | `/api/cart/items/:id` | ✓ | — | Remove item from cart |
-| DELETE | `/api/cart` | ✓ | — | Clear cart |
-| POST | `/api/orders` | ✓ | Customer | Place order (checkout) |
-| GET | `/api/orders/my-orders` | ✓ | Customer | Get my orders |
-| GET | `/api/orders` | ✓ | Admin | Get all orders |
-| PATCH | `/api/orders/:id/status` | ✓ | Admin | Transition order status |
-| GET | `/api/orders/:id` | ✓ | — | Get order by ID |
-| GET | `/api/discounts/coupons` | ✗ | — | Get available coupons |
-| POST | `/api/discounts/apply` | ✓ | — | Apply discount to price |
-| GET | `/api/notifications` | ✓ | — | Get my notifications |
-| PATCH | `/api/notifications/:id/read` | ✓ | — | Mark notification read |
-| PATCH | `/api/notifications/read-all` | ✓ | — | Mark all read |
+### 1. Backend
+```bash
+cd backend
+npm install
+# Create .env based on .env.example
+# Add MONGODB_URI, JWT_SECRET, and PORT=4000
+npm run dev
+```
+
+### 2. Frontend
+```bash
+cd frontend
+npm install
+# Add VITE_API_URL=http://localhost:4000 in .env
+npm run dev
+```
 
 ---
-
-## 🚀 Setup Instructions
-
-### Prerequisites
-- Node.js 18+
-- MongoDB running locally (or MongoDB Atlas URI)
-
-### 1. Clone & Configure
-
-```bash
-cd E_Commerce_SD_Prj
-
-# Backend
-cp backend/.env.example backend/.env
-# Edit backend/.env with your MongoDB URI and JWT secret
-```
-
-### 2. Install Dependencies
-
-```bash
-# Backend
-cd backend && npm install
-
-# Frontend
-cd ../frontend && npm install
-```
-
-### 3. Start Development
-
-```bash
-# Terminal 1 — Backend (port 5000)
-cd backend && npm run dev
-
-# Terminal 2 — Frontend (port 3000)
-cd frontend && npm run dev
-```
-
-### 4. Access the App
-
-Open **http://localhost:3000** in your browser.
-
-### Available Coupon Codes
-| Code | Discount |
-|------|----------|
-| `SAVE10` | 10% off (max $50) |
-| `FLAT20` | 20% off (max $100, min order $200) |
-| `WELCOME` | 15% off (max $30) |
-| `MEGA50` | 50% off (max $500, min order $1000) |
-
----
-
-## ⚠️ Edge Cases Handled
-
-1. **Payment Failure** — Order stays pending, inventory NOT deducted, structured error returned
-2. **Out-of-Stock** — Atomic `findOneAndUpdate` with `$gte` condition prevents overselling/race conditions
-3. **Role Guard** — Admin-only routes protected via `requireRole('admin')` middleware
-4. **JWT Expiry** — Axios interceptor catches 401, clears token, and redirects to login
+## ⚠️ Important Configurations
+*   **CORS:** Backend `FRONTEND_ORIGIN` must match your Vercel URL.
+*   **SPA Routing:** The `frontend/vercel.json` handles client-side routing to prevent 404s on page refresh.
+*   **Database:** MongoDB Atlas must have IP Access set to `0.0.0.0/0` for Render to connect.

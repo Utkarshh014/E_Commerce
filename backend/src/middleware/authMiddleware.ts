@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/AuthService';
 import Product from '../models/Product';
+import User from '../models/User';
 
 // ─── Auth Middleware ─────────────────────────────────────────────────
 // Verifies JWT and attaches user info to request.
@@ -53,16 +54,29 @@ export const requireRole = (...roles: string[]) => {
   };
 };
 
-export const requireApprovedVendor = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-  if (req.userRole === 'admin') return next();
-  if (req.userRole !== 'vendor' || !req.isApprovedVendor) {
-    res.status(403).json({
-      success: false,
-      message: 'Access denied. Vendor approval required.',
-    });
-    return;
+export const requireApprovedVendor = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (req.userRole === 'admin') return next();
+    
+    if (req.userRole !== 'vendor') {
+      res.status(403).json({ success: false, message: 'Access denied. Vendor role required.' });
+      return;
+    }
+
+    // Live check from DB to avoid stale JWT issues
+    const user = await User.findById(req.userId).select('isApprovedVendor');
+    if (!user || !user.isApprovedVendor) {
+      res.status(403).json({
+        success: false,
+        message: 'Access denied. Vendor approval required.',
+      });
+      return;
+    }
+    
+    next();
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Approval check failed' });
   }
-  next();
 };
 
 // ─── Product Ownership Guard ────────────────────────────────────────────────────
