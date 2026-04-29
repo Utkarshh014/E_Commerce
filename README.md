@@ -1,23 +1,23 @@
-# 🛒 ShopSmart — Advanced Multi-Vendor eCommerce Platform
+#  ShopSmart — Advanced Multi-Vendor eCommerce Platform
 
 ShopSmart is a production-grade, highly scalable **Multi-Vendor Marketplace** built using the **MERN stack** (MongoDB, Express, React, Node.js) and **TypeScript**. This project serves as a masterclass in **System Design**, **Design Patterns**, and **Enterprise-Level Architecture**.
 
 ---
 ### Live Link: [Link](https://shopsmart-sd-prj-ecom.vercel.app)
 ### Project Report: [Project Report](https://drive.google.com/file/d/1dPGX9orj51_QdelIHJ-ku45jqBNgnBjk/view?usp=drive_link)
-## 🌟 Key Features
+##  Key Features
 
-### 🏢 Multi-Vendor Architecture
+###  Multi-Vendor Architecture
 *   **Sub-Order System:** When a customer buys items from multiple vendors, the system automatically splits the purchase into individual **Sub-Orders**. This allows each vendor to manage only their specific items without seeing data from competitors.
 *   **Vendor Approval Workflow:** New vendors go through a "Pending" state and must be verified by an **Admin** before they can list products.
 
-### 🛠️ Advanced Design Patterns
+###  Advanced Design Patterns
 *   **Strategy Pattern:** Interchangeable algorithms for **Payments** (Stripe, UPI, Wallet) and **Discounts** (Flat, Percentage, Coupon).
 *   **State Pattern:** Robust Order Lifecycle management (Pending → Paid → Shipped → Delivered). Transitions are validated via dedicated state classes.
 *   **Observer Pattern:** Decoupled notification system. The order service triggers events, and multiple observers (Email, In-App) react accordingly.
 *   **Factory Pattern:** Centralized product creation for physical and digital goods.
 
-### 🛡️ Security & Hardening
+###  Security & Hardening
 *   **RBAC (Role-Based Access Control):** Granular permissions for `ADMIN`, `VENDOR`, and `CUSTOMER`.
 *   **JWT Authentication:** Stateless security with secure token storage and automatic logout on expiry (Axios Interceptors).
 *   **NoSQL Injection Protection:** Strict schema validation and input sanitization using `express-validator`.
@@ -25,7 +25,7 @@ ShopSmart is a production-grade, highly scalable **Multi-Vendor Marketplace** bu
 
 ---
 
-## 🏗️ Architecture Overview
+##  Architecture Overview
 
 ```mermaid
 graph TD
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🚀 CI/CD & Deployment
+##  CI/CD & Deployment
 
 This project is fully automated using **GitHub Actions**.
 
@@ -55,7 +55,7 @@ This project is fully automated using **GitHub Actions**.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 backend/src/
@@ -78,7 +78,7 @@ frontend/src/
 
 ---
 
-## 🛠️ Local Setup
+##  Local Setup
 
 ### 1. Backend
 ```bash
@@ -98,7 +98,7 @@ npm run dev
 ```
 
 ---
-## ⚠️ Important Configurations
+##  Important Configurations
 *   **CORS:** Backend `FRONTEND_ORIGIN` must match your Vercel URL.
 *   **SPA Routing:** The `frontend/vercel.json` handles client-side routing to prevent 404s on page refresh.
 *   **Database:** MongoDB Atlas must have IP Access set to `0.0.0.0/0` for Render to connect.
