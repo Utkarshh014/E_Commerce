@@ -1,10 +1,10 @@
-# 🛒 E-Commerce Platform
+#  E-Commerce Platform
 
 A production-grade, scalable **Mini E-Commerce Platform** built with the **MERN stack** (MongoDB, Express, React, Node.js) and **TypeScript**. Architecturally designed with strict OOP principles, featuring **4 design patterns** implemented across 8 modules.
 
 ---
 
-## 🏗️ Architecture Overview
+##  Architecture Overview
 
 ```
 ┌─────────── Frontend (React + Vite + TailwindCSS) ───────────┐
@@ -36,7 +36,7 @@ Excalidraw URL: https://excalidraw.com/#room=931f37ddc819da5b8b7f,46B46RRH9nqD3B
 
 
 ---
-## 🎯 OOP Concepts & Design Patterns
+##  OOP Concepts & Design Patterns
 
 ### Design Patterns Implemented
 
@@ -71,7 +71,7 @@ const orderService = new OrderService(
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 backend/src/
@@ -113,7 +113,7 @@ frontend/src/
 
 ---
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Auth | Role | Description |
 |--------|----------|------|------|-------------|
@@ -144,7 +144,7 @@ frontend/src/
 
 ---
 
-## 🚀 Setup Instructions
+##  Setup Instructions
 
 ### Prerequisites
 - Node.js 18+
@@ -194,7 +194,7 @@ Open **http://localhost:3000** in your browser.
 
 ---
 
-## ⚠️ Edge Cases Handled
+##  Edge Cases Handled
 
 1. **Payment Failure** — Order stays pending, inventory NOT deducted, structured error returned
 2. **Out-of-Stock** — Atomic `findOneAndUpdate` with `$gte` condition prevents overselling/race conditions
