@@ -5,6 +5,7 @@ ShopSmart is a production-grade, highly scalable **Multi-Vendor Marketplace** bu
 ---
 ### Live Link: [Link](https://shopsmart-sd-prj-ecom.vercel.app)
 ### Project Report: [Project Report](https://drive.google.com/file/d/1dPGX9orj51_QdelIHJ-ku45jqBNgnBjk/view?usp=drive_link)
+### Project Diagrams: [Project Diagrams](https://excalidraw.com/#room=931f37ddc819da5b8b7f,46B46RRH9nqD3BOEEAkcdQ)
 ##  Key Features
 
 ###  Multi-Vendor Architecture
